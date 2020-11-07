@@ -28,6 +28,7 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -92,6 +93,7 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -123,6 +125,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "rabobank-issue-finder"
+    }
+  },
+  "defaultProject": "rabobank-issue-finder",
+  "cli": {
+    "analytics": "59ec5cd6-08fa-4f1c-a6e1-4c91eb3a05c6"
+  }
 }

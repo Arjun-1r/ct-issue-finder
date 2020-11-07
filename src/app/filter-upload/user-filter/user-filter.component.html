@@ -1,0 +1,97 @@
+<section class="pt-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12 text-center">
+                <h1> <img class="logo-sizing" src="../../../assets/csvgreen.png"><span>CSV Extractor</span></h1>
+                <h3>Upload your CSV and Visualize here.</h3>
+            </div>
+            <div class="mgn">
+                <div class="col-sm-12 col-md-12">
+                    <div class="upload-area">
+                        <div class="upload-part">
+                            <div class="row">
+                                <div class="col-sm-12 text-center">
+                                    <h2>Upload CSV file</h2>
+                                </div>
+                            </div>
+                            <input class="upload-button" (change)="onFileChange($event)" multiple="false" type="file"
+                                accept=".csv">
+                            <p class="left-text">or Drop CSV here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<mat-card class="zeromgn" *ngIf="userData?.length > 0">
+    <mat-card-header class="popHeader">
+        <mat-card-title class="titlecustom">
+            User List
+        </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+        <form [formGroup]="issueCountFilterForm">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+                        <mat-form-field appearance="legacy">
+                            <mat-label>Issue count </mat-label>
+                            <mat-select (selectionChange)="rangeChange($event.value)"
+                                formControlName="selectedRangeType">
+                                <mat-option *ngFor="let rangeType of rangeTypes" [value]="rangeType">
+                                    {{rangeType}}
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+                        <mat-form-field appearance="legacy">
+                            <mat-label>Start Count</mat-label>
+                            <input matInput type="text" (keypress)="numberOnly($event)"
+                                (keyup)="searchBasedOnCount($event)" placeholder="In number"
+                                formControlName="startValue">
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+                        <mat-form-field appearance="legacy">
+                            <mat-label>End Count</mat-label>
+                            <input matInput type="text" (keypress)="numberOnly($event)"
+                                (keyup)="searchBasedOnCount($event)" placeholder="In number" formControlName="endValue">
+                        </mat-form-field>
+                    </div>
+                    <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
+                        <button mat-button (click)="resetSearch(true)" class="btn-primary">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-striped mat-elevation-z8" mat-table [dataSource]="userDataSource" matSort>
+            <!-- all Column -->
+            <ng-container *ngFor="let i=index;let initColObj of initColObjs" [matColumnDef]="initColObj.col">
+                <th class="contcenter" scope="col" id="tablehid_{{i}}" mat-header-cell *matHeaderCellDef
+                    mat-sort-header>
+                    <strong>{{initColObj.display}}</strong>
+                </th>
+                <td class="contcenter" mat-cell *matCellDef="let element">
+                    <ng-container *ngIf="initColObj.type === 'regular';else date">
+                        {{element[initColObj.col]}}
+                    </ng-container>
+                    <ng-template #date>
+                        <ng-container>
+                            {{element[initColObj.col] | date: 'dd/MM/yyyy'}}
+                        </ng-container>
+                    </ng-template>
+                </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="userDisplayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: userDisplayedColumns;"></tr>
+        </table>
+
+        <div>
+            <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+        </div>
+    </mat-card-content>
+</mat-card>
