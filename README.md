@@ -9,7 +9,7 @@ Application is used to filter the user list with minimum issue count. The system
 Node js and Angular cli latest version needed.
 
 # Add dependencies 
-As the repository doesn't contain the dependencies. We have to following command to download it from the npm repository.
+As the repository doesn't contain the dependencies. We have to execute following command to download it from the npm repository.
 
 `npm install` or `npm i`
 
