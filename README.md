@@ -1,10 +1,21 @@
 # RabobankIssueFinder
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.0.6.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.0.6. 
+
+# Introduction
+Application is used to filter the user list with minimum issue count. The system facilitate the user to filter using greater than certain number, or less than certain number and between certain numbers.
+
+# Prerequisites
+Node js and Angular cli latest version needed.
+
+# Add dependencies 
+As the repository doesn't contain the dependencies. We have to following command to download it from the npm repository.
+
+`npm install` or `npm i`
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+Run `ng serve -o` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
 ## Code scaffolding
 
