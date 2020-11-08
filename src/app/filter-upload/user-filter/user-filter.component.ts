@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { UserIssue } from '../model/user-issue';
 import { MatPaginator } from '@angular/material/paginator';
@@ -13,15 +13,22 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
   styleUrls: ['./user-filter.component.scss']
 })
 export class UserFilterComponent implements OnInit {
+  // using the material provided components for pagination and sorting.
   @ViewChild(MatPaginator) userDataPaginator: MatPaginator;
   @ViewChild(MatSort) userDataSorting: MatSort;
+  @ViewChild('csvInput') // to manage the file input. Eg clear the input.
+  csvInputElement: ElementRef; // taking the element as object
+
+  // readonly repeated values
   readonly lt = 'Less than or equal to';
   readonly gt = 'Greater than or equal to';
   readonly bt = 'Between';
   userData: UserIssue[];
+  errorMessage: string;
   userDataSource = new MatTableDataSource();
   userDisplayedColumns: string[] = [];
-  initColObjs: any[] = UserColumnIdentifier;
+  initColObjs: any[] = UserColumnIdentifier; // Because this is contant json stored in app contant file
+  expectedHeader = this.initColObjs.map(value => value.col);
   rangeTypes = [this.gt, this.lt, this.bt];
   selectedRangeType: string;
   issueCountFilterForm: FormGroup;
@@ -39,6 +46,7 @@ export class UserFilterComponent implements OnInit {
   }
 
   onFileChange(evt: any): void {
+    this.errorMessage = '';
     this.userData = [];
     const target: DataTransfer = (evt.target) as DataTransfer;
     if (target.files.length !== 1) {
@@ -58,24 +66,36 @@ export class UserFilterComponent implements OnInit {
       });
       const formattedHeaders = exceldata[0].map(value => value.replaceAll(' ', '_').toLowerCase());
       this.userDisplayedColumns = formattedHeaders;
-      exceldata.slice(1, exceldata.length).forEach((datarow, index, array) => {
-        const userData = {};
-        formattedHeaders.forEach((header, headerIndex) => {
-          userData[header] = datarow[headerIndex]; // assigning the row values to respective headers.
+
+      // to validate the uploaded in file in specified format.
+      if (this.headerValidator(this.expectedHeader, this.userDisplayedColumns)) {
+        exceldata.slice(1, exceldata.length).forEach((datarow, index, array) => {
+          const userData = {};
+          formattedHeaders.forEach((header, headerIndex) => {
+            userData[header] = datarow[headerIndex]; // assigning the row values to respective headers.
+          });
+          this.userData.push(userData as UserIssue); // getting the json data as user defined object.
+          if (index === array.length - 1) {
+            this.userDataSource = new MatTableDataSource(this.userData);
+            setTimeout(() => {// wait till mat table taking the data.
+              this.userDataSource.paginator = this.userDataPaginator;
+              this.userDataSource.sort = this.userDataSorting;
+            }, 500); // half a second of waiting
+
+            // clearing the input because when the user try to upload same named file with edited content. 
+            // It will not process the file. So taking the values and clearing the input.
+            this.csvInputElement.nativeElement.value = '';
+          }
         });
-        this.userData.push(userData as UserIssue); // getting the json data as user defined object.
-        if (index === array.length - 1) {
-          this.userDataSource = new MatTableDataSource(this.userData);
-          setTimeout(() => {
-            this.userDataSource.paginator = this.userDataPaginator;
-            this.userDataSource.sort = this.userDataSorting;
-          }, 500);
-        }
-      });
+      } else {
+        this.csvInputElement.nativeElement.value = '';
+        this.errorMessage = 'Please upload valid CSV file. The header should First name, Sur name, Issue count,	Date of birth';
+      }
     };
+
     reader.readAsBinaryString(target.files[0]);
   }
-
+  // this method will be triggered on kepup in user input.
   searchBasedOnCount(event: Event): void {
     this.setDatasourcePredicate();
     const filterValue = (event.target as HTMLInputElement).value;
@@ -90,6 +110,7 @@ export class UserFilterComponent implements OnInit {
     }
   }
 
+  // accept only number for input fields
   numberOnly(event): boolean {
     const charCode = (event.which) ? event.which : event.keyCode;
     if (charCode > 31 && (charCode < 48 || charCode > 57)) {
@@ -98,6 +119,16 @@ export class UserFilterComponent implements OnInit {
     return true;
   }
 
+  headerValidator(expectedHeaderArr, actualHeaderArr): boolean {
+    if (expectedHeaderArr.length === actualHeaderArr.length &&
+      expectedHeaderArr.every((value, index) => value === actualHeaderArr[index])) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  // to reset the search fields.
   resetSearch(hardReset = false): void {
     if (hardReset) {
       this.resetFormGroup();
@@ -105,28 +136,27 @@ export class UserFilterComponent implements OnInit {
     this.setDatasourcePredicate();
     this.userDataSource.filter = '';
     this.issueCountFilterForm.get('startValue').disable();
+    this.issueCountFilterForm.get('startValue').setValue('');
+    this.issueCountFilterForm.get('endValue').enable();
   }
 
+  // to reset the formgroup
   resetFormGroup(): void {
     this.issueCountFilterForm.reset();
     this.issueCountFilterForm.get('selectedRangeType').setValue(this.lt);
   }
 
-
+  // toggle between various range selection. Facilitates the user to search in variety of inputs
   rangeChange(selectedValue): void {
     this.selectedRangeType = selectedValue;
     switch (selectedValue) {
       case this.lt:
-        this.issueCountFilterForm.get('startValue').disable();
-        this.issueCountFilterForm.get('startValue').setValue('');
-        this.issueCountFilterForm.get('endValue').enable();
         this.resetSearch();
         break;
       case this.gt:
         this.issueCountFilterForm.get('endValue').setValue('');
         this.issueCountFilterForm.get('endValue').disable();
         this.issueCountFilterForm.get('startValue').enable();
-        this.resetSearch();
         break;
       default:
         this.issueCountFilterForm.get('endValue').enable();
@@ -135,6 +165,8 @@ export class UserFilterComponent implements OnInit {
     }
   }
 
+
+  // customized search method provided by material.
   setDatasourcePredicate(): void {
     const formValues = this.issueCountFilterForm.value;
     this.userDataSource.filterPredicate = (data: { issue_count: number }, filtersJson: string) => {

@@ -14,8 +14,8 @@
                                     <h2>Upload CSV file</h2>
                                 </div>
                             </div>
-                            <input class="upload-button" (change)="onFileChange($event)" multiple="false" type="file"
-                                accept=".csv">
+                            <input #csvInput class="upload-button" (change)="onFileChange($event)" multiple="false"
+                                type="file" accept=".csv">
                             <p class="left-text">or Drop CSV here</p>
                         </div>
                     </div>
@@ -24,6 +24,10 @@
         </div>
     </div>
 </section>
+
+<div *ngIf="errorMessage" class="error-message">
+    {{errorMessage}}
+</div>
 
 <mat-card class="zeromgn" *ngIf="userData?.length > 0">
     <mat-card-header class="popHeader">
